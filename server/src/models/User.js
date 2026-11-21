@@ -10,7 +10,26 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    passwordHash: { type: String, required: true },
+    passwordHash: {
+      type: String,
+      required: function () {
+        return this.authProvider === 'local';
+      },
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    avatar: {
+      type: String,
+      default: '',
+    },
     preferences: {
       preferredCategories: { type: [String], default: [] },
       reminderHour: { type: Number, default: 8, min: 0, max: 23 },

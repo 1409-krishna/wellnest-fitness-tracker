@@ -33,6 +33,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('wellnest_token', data.token)
     localStorage.setItem('wellnest_user', JSON.stringify(data.user))
     setUser(data.user)
+    return data.user
   }
 
   const register = async (name, email, password) => {
@@ -40,6 +41,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem('wellnest_token', data.token)
     localStorage.setItem('wellnest_user', JSON.stringify(data.user))
     setUser(data.user)
+    return data.user
+  }
+
+  const loginWithGoogle = async (credential) => {
+    const { data } = await api.post('/auth/google', { credential })
+    localStorage.setItem('wellnest_token', data.token)
+    localStorage.setItem('wellnest_user', JSON.stringify(data.user))
+    setUser(data.user)
+    return data.user
   }
 
   const logout = () => {
@@ -48,7 +58,10 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const value = useMemo(() => ({ user, loading, login, register, logout }), [user, loading])
+  const value = useMemo(
+    () => ({ user, loading, login, register, loginWithGoogle, logout }),
+    [user, loading]
+  )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

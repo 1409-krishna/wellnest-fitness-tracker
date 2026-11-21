@@ -9,6 +9,8 @@ function publicUser(user) {
     id: user._id,
     name: user.name,
     email: user.email,
+    authProvider: user.authProvider || 'local',
+    avatar: user.avatar || '',
     preferences: user.preferences,
   };
 }

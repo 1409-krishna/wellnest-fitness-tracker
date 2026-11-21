@@ -1,15 +1,15 @@
 const express = require('express');
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
-const { register, login, me } = require('../controllers/authController');
+const { register, login, googleLogin, me } = require('../controllers/authController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
-  message: { message: 'Too many login attempts. Try again shortly.' },
+  max: 40,
+  message: { message: 'Too many authentication attempts. Try again shortly.' },
 });
 
 router.post(
@@ -27,6 +27,13 @@ router.post(
   body('email').isEmail().withMessage('Enter a valid email'),
   body('password').notEmpty().withMessage('Password is required'),
   login
+);
+
+router.post(
+  '/google',
+  authLimiter,
+  body('credential').notEmpty().withMessage('Google credential token is required'),
+  googleLogin
 );
 
 router.get('/me', auth, me);

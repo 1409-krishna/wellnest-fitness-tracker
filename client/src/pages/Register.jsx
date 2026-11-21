@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import GoogleAuthButton from '../components/GoogleAuthButton'
 
 export default function Register() {
-  const { user, register } = useAuth()
+  const { user, register, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
 
   const [form, setForm] = useState({
@@ -47,6 +48,23 @@ export default function Register() {
     } finally {
       setBusy(false)
     }
+  }
+
+  const handleGoogleSuccess = async (credential) => {
+    setBusy(true)
+    setError('')
+    try {
+      await loginWithGoogle(credential)
+      navigate('/', { replace: true })
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google registration failed. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleGoogleError = (errMessage) => {
+    setError(errMessage)
   }
 
   return (
@@ -120,11 +138,8 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Register Form */}
-          <form
-            onSubmit={submit}
-            className="rounded-3xl border border-sand bg-paper p-6 shadow-[0_15px_50px_rgba(40,60,45,0.07)] transition-shadow duration-300 hover:shadow-[0_20px_60px_rgba(40,60,45,0.12)] sm:p-9"
-          >
+          {/* Register Card */}
+          <div className="rounded-3xl border border-sand bg-paper p-6 shadow-[0_15px_50px_rgba(40,60,45,0.07)] transition-shadow duration-300 hover:shadow-[0_20px_60px_rgba(40,60,45,0.12)] sm:p-9">
             {error && (
               <div
                 role="alert"
@@ -134,79 +149,99 @@ export default function Register() {
               </div>
             )}
 
-            {/* Name */}
-            <label className="block text-sm font-medium text-ink">
-              Full name
-              <input
-                type="text"
-                name="name"
-                placeholder="Krishna Sharma"
-                required
-                value={form.name}
-                onChange={handleChange}
-                className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3.5 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink/35 hover:border-sage/50 focus:border-sage focus:ring-4 focus:ring-sage/10"
-              />
-            </label>
-
-            {/* Email */}
-            <label className="mt-5 block text-sm font-medium text-ink">
-              Email address
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-                value={form.email}
-                onChange={handleChange}
-                className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3.5 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink/35 hover:border-sage/50 focus:border-sage focus:ring-4 focus:ring-sage/10"
-              />
-            </label>
-
-            {/* Password */}
-            <label className="mt-5 block text-sm font-medium text-ink">
-              Password
-              <div className="relative mt-2">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="At least 8 characters"
-                  autoComplete="new-password"
-                  minLength={8}
-                  required
-                  value={form.password}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-sand bg-cream px-4 py-3.5 pr-20 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink/35 hover:border-sage/50 focus:border-sage focus:ring-4 focus:ring-sage/10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-sage transition-colors hover:text-clay"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </label>
-
-            {/* Submit */}
-            <button
-              type="submit"
+            {/* Google One-Click Registration */}
+            <GoogleAuthButton
+              text="Continue with Google"
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
               disabled={busy}
-              className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-sage py-4 text-sm font-semibold text-paper shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-moss hover:shadow-lg active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {busy ? (
-                <>
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-paper/40 border-t-paper" />
-                  Creating account...
-                </>
-              ) : (
-                <>
-                  Create account
-                  <span aria-hidden="true">→</span>
-                </>
-              )}
-            </button>
+            />
+
+            {/* Divider */}
+            <div className="my-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-sand" />
+              <span className="text-xs font-medium uppercase tracking-wider text-ink/40">
+                or sign up with email
+              </span>
+              <div className="h-px flex-1 bg-sand" />
+            </div>
+
+            {/* Email/Password Form */}
+            <form onSubmit={submit}>
+              {/* Name */}
+              <label className="block text-sm font-medium text-ink">
+                Full name
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Krishna Sharma"
+                  required
+                  value={form.name}
+                  onChange={handleChange}
+                  className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3.5 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink/35 hover:border-sage/50 focus:border-sage focus:ring-4 focus:ring-sage/10"
+                />
+              </label>
+
+              {/* Email */}
+              <label className="mt-4 block text-sm font-medium text-ink">
+                Email address
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                  value={form.email}
+                  onChange={handleChange}
+                  className="mt-2 w-full rounded-xl border border-sand bg-cream px-4 py-3.5 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink/35 hover:border-sage/50 focus:border-sage focus:ring-4 focus:ring-sage/10"
+                />
+              </label>
+
+              {/* Password */}
+              <label className="mt-4 block text-sm font-medium text-ink">
+                Password
+                <div className="relative mt-2">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="At least 8 characters"
+                    autoComplete="new-password"
+                    minLength={8}
+                    required
+                    value={form.password}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-sand bg-cream px-4 py-3.5 pr-20 text-sm text-ink outline-none transition-all duration-300 placeholder:text-ink/35 hover:border-sage/50 focus:border-sage focus:ring-4 focus:ring-sage/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-sage transition-colors hover:text-clay"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </label>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-7 flex w-full items-center justify-center gap-3 rounded-xl bg-sage py-4 text-sm font-semibold text-paper shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-moss hover:shadow-lg active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busy ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-paper/40 border-t-paper" />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    Create account with Email
+                    <span aria-hidden="true">→</span>
+                  </>
+                )}
+              </button>
+            </form>
 
             {/* Sign in link */}
             <p className="mt-7 text-center text-sm text-ink/60">
@@ -218,7 +253,7 @@ export default function Register() {
                 Sign in
               </Link>
             </p>
-          </form>
+          </div>
 
           {/* Bottom note */}
           <p className="mt-7 text-center text-xs leading-6 text-ink/45">
