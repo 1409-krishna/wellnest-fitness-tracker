@@ -4,8 +4,6 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const { signToken, publicUser } = require('../utils/token');
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 async function register(req, res, next) {
   try {
     const errors = validationResult(req);
@@ -70,17 +68,28 @@ async function googleLogin(req, res, next) {
       return res.status(400).json({ message: 'Google credential token is required' });
     }
 
+    const clientId = process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null;
+    if (!clientId) {
+      console.error('GOOGLE_CLIENT_ID is missing in server environment.');
+      return res.status(500).json({
+        message: 'Backend server missing GOOGLE_CLIENT_ID. Please restart the backend server (npm run dev in /server).',
+      });
+    }
+
+    const googleClient = new OAuth2Client(clientId);
+
     // Verify Google ID Token
     let payload;
     try {
       const ticket = await googleClient.verifyIdToken({
         idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
+        audience: clientId,
       });
       payload = ticket.getPayload();
     } catch (verifyErr) {
+      console.error('Google token verification failed:', verifyErr.message);
       return res.status(401).json({
-        message: 'Invalid Google token. Verification failed.',
+        message: `Google verification failed: ${verifyErr.message}`,
         error: verifyErr.message,
       });
     }
@@ -131,6 +140,7 @@ async function googleLogin(req, res, next) {
     const token = signToken(user._id);
     res.json({ token, user: publicUser(user) });
   } catch (err) {
+    console.error('Error in googleLogin:', err);
     next(err);
   }
 }
