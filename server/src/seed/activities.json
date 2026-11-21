@@ -1,0 +1,130 @@
+[
+  {
+    "name": "Morning Walk",
+    "category": "movement",
+    "intensity": "gentle",
+    "durationMins": 25,
+    "description": "Easy outdoor or indoor walking to start the day.",
+    "isTemplate": true
+  },
+  {
+    "name": "Yoga Flow",
+    "category": "movement",
+    "intensity": "gentle",
+    "durationMins": 30,
+    "description": "Slow sun salutations and breath-led stretches.",
+    "isTemplate": true
+  },
+  {
+    "name": "Desk Stretch",
+    "category": "movement",
+    "intensity": "gentle",
+    "durationMins": 10,
+    "description": "Neck, shoulders, and hips after sitting.",
+    "isTemplate": true
+  },
+  {
+    "name": "Easy Cycling",
+    "category": "outdoor",
+    "intensity": "moderate",
+    "durationMins": 40,
+    "description": "Comfortable ride without chasing speed.",
+    "isTemplate": true
+  },
+  {
+    "name": "Dance Break",
+    "category": "movement",
+    "intensity": "moderate",
+    "durationMins": 20,
+    "description": "One upbeat playlist, no performance needed.",
+    "isTemplate": false
+  },
+  {
+    "name": "Restorative Rest",
+    "category": "rest",
+    "intensity": "gentle",
+    "durationMins": 15,
+    "description": "Lie down, unclench the jaw, let the day slow.",
+    "isTemplate": true
+  },
+  {
+    "name": "Nature Pause",
+    "category": "outdoor",
+    "intensity": "gentle",
+    "durationMins": 15,
+    "description": "Sit or stroll outside without tracking intensity.",
+    "isTemplate": true
+  },
+  {
+    "name": "Water Check-in",
+    "category": "hydration",
+    "intensity": "gentle",
+    "durationMins": 5,
+    "description": "Fill a bottle and sip through the next block of the day.",
+    "isTemplate": true
+  },
+  {
+    "name": "Herbal Tea Pause",
+    "category": "hydration",
+    "intensity": "gentle",
+    "durationMins": 10,
+    "description": "Warm drink as a hydration and rest cue.",
+    "isTemplate": false
+  },
+  {
+    "name": "Wind-down",
+    "category": "sleep",
+    "intensity": "gentle",
+    "durationMins": 20,
+    "description": "Screens down, dim lights, slow breathing before bed.",
+    "isTemplate": true
+  },
+  {
+    "name": "Sleep Log",
+    "category": "sleep",
+    "intensity": "gentle",
+    "durationMins": 5,
+    "description": "Note rest quality without judging the night.",
+    "isTemplate": true
+  },
+  {
+    "name": "Box Breathing",
+    "category": "mind",
+    "intensity": "gentle",
+    "durationMins": 8,
+    "description": "Inhale, hold, exhale, hold — four counts each.",
+    "isTemplate": true
+  },
+  {
+    "name": "Short Meditation",
+    "category": "mind",
+    "intensity": "gentle",
+    "durationMins": 10,
+    "description": "Sit comfortably and follow the breath.",
+    "isTemplate": true
+  },
+  {
+    "name": "Park Walk",
+    "category": "outdoor",
+    "intensity": "gentle",
+    "durationMins": 30,
+    "description": "Unhurried walk under trees or open sky.",
+    "isTemplate": false
+  },
+  {
+    "name": "Mobility Flow",
+    "category": "movement",
+    "intensity": "gentle",
+    "durationMins": 15,
+    "description": "Joints through a comfortable range of motion.",
+    "isTemplate": true
+  },
+  {
+    "name": "Evening Stretch",
+    "category": "rest",
+    "intensity": "gentle",
+    "durationMins": 15,
+    "description": "Long hamstring and hip openers before wind-down.",
+    "isTemplate": true
+  }
+]

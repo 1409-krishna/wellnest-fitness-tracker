@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Wellnest API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Krishna Sharma\",\n  \"email\": \"krishna@demo.com\",\n  \"password\": \"wellnest123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"krishna@demo.com\",\n  \"password\": \"wellnest123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activities",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/activities"
+          }
+        },
+        {
+          "name": "Create yoga",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sunrise Yoga\",\n  \"category\": \"movement\",\n  \"intensity\": \"gentle\",\n  \"durationMins\": 25,\n  \"description\": \"Slow flow\",\n  \"isTemplate\": true\n}"
+            },
+            "url": "{{baseUrl}}/activities"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Habits",
+      "item": [
+        {
+          "name": "Mark hydration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-11-21\",\n  \"pillar\": \"hydration\",\n  \"completed\": true\n}"
+            },
+            "url": "{{baseUrl}}/habits"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Insights",
+      "item": [
+        {
+          "name": "Sample week",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/insights/sample-week"
+          }
+        },
+        {
+          "name": "Get insights",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/insights"
+          }
+        }
+      ]
+    }
+  ]
+}
