@@ -76,4 +76,19 @@ async function toggleFavorite(req, res, next) {
   }
 }
 
-module.exports = { list, templates, create, toggleFavorite };
+async function remove(req, res, next) {
+  try {
+    const { id } = req.params;
+    const activity = await Activity.findOne({ _id: id, createdBy: req.user._id });
+    if (!activity) {
+      return res.status(404).json({ message: 'Activity not found or built-in activities cannot be deleted' });
+    }
+    await activity.deleteOne();
+    await Favorite.deleteMany({ activityId: id });
+    res.json({ message: 'Activity deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { list, templates, create, toggleFavorite, remove };

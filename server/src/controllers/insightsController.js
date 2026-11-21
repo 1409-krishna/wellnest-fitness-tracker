@@ -1,4 +1,4 @@
-const { buildInsights } = require('../services/insightsService');
+const { buildInsights, coachChat } = require('../services/insightsService');
 
 async function getInsights(req, res, next) {
   try {
@@ -9,4 +9,14 @@ async function getInsights(req, res, next) {
   }
 }
 
-module.exports = { getInsights };
+async function askCoach(req, res, next) {
+  try {
+    const { query } = req.body;
+    const response = await coachChat(req.user._id, query);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getInsights, askCoach };

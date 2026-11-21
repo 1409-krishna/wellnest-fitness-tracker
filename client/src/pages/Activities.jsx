@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Heart, Plus } from 'lucide-react'
+import { Heart, Plus, Trash2, CheckCircle2, Sparkles } from 'lucide-react'
 import api from '../api/client'
 import EmptyState from '../components/EmptyState'
 import { CATEGORIES, toDateKey } from '../utils/dates'
+import { triggerConfetti } from '../utils/confetti'
 
 const emptyForm = {
   name: '',
@@ -44,7 +45,21 @@ export default function Activities() {
       date: toDateKey(),
       durationMins: activity.durationMins,
     })
-    setNotice(`${activity.name} logged for today.`)
+    triggerConfetti()
+    setNotice(`🎉 "${activity.name}" logged for today! Take a moment to enjoy your progress.`)
+    setTimeout(() => setNotice(''), 5000)
+  }
+
+  const deleteActivity = async (id, name) => {
+    if (!window.confirm(`Delete "${name}"?`)) return
+    try {
+      await api.delete(`/activities/${id}`)
+      setNotice(`"${name}" deleted.`)
+      setTimeout(() => setNotice(''), 4000)
+      await load()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not delete activity')
+    }
   }
 
   const create = async (e) => {
@@ -52,6 +67,9 @@ export default function Activities() {
     setError('')
     try {
       await api.post('/activities', form)
+      triggerConfetti()
+      setNotice(`Activity "${form.name}" added to your library!`)
+      setTimeout(() => setNotice(''), 5000)
       setForm(emptyForm)
       setOpen(false)
       await load()
@@ -71,43 +89,51 @@ export default function Activities() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-sage px-4 py-2 text-paper"
+          className="inline-flex items-center gap-2 rounded-2xl bg-sage px-4 py-2.5 text-sm font-semibold text-paper shadow-sm transition hover:bg-moss"
         >
-          <Plus size={16} /> Add activity
+          <Plus size={18} /> Add custom activity
         </button>
       </header>
 
-      {notice ? <p className="rounded-2xl bg-moss/20 px-4 py-3 text-sm text-sage">{notice}</p> : null}
+      {notice ? (
+        <div className="flex items-center gap-2.5 rounded-2xl border border-sage/30 bg-moss/20 px-5 py-4 text-sm font-medium text-sage shadow-sm">
+          <Sparkles size={18} className="text-clay" />
+          <span>{notice}</span>
+        </div>
+      ) : null}
 
       {open ? (
-        <form onSubmit={create} className="grid gap-3 rounded-3xl bg-paper p-6 md:grid-cols-2">
-          <h2 className="font-display text-xl md:col-span-2">Add walking, yoga, or another activity</h2>
+        <form onSubmit={create} className="grid gap-4 rounded-3xl border border-sand bg-paper p-6 shadow-md md:grid-cols-2">
+          <div className="md:col-span-2">
+            <h2 className="font-display text-2xl">Add custom wellness activity</h2>
+            <p className="text-sm text-ink/60 mt-1">Design an activity that feels natural and enjoyable for your routine.</p>
+          </div>
           {error ? <p className="text-sm text-clay md:col-span-2">{error}</p> : null}
           <input
             required
-            placeholder="Name (e.g. Evening yoga)"
+            placeholder="Name (e.g. Evening yoga, Post-work walk)"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="rounded-2xl border border-sand bg-cream px-4 py-3"
+            className="rounded-2xl border border-sand bg-cream px-4 py-3 outline-none focus:border-sage"
           />
           <select
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="rounded-2xl border border-sand bg-cream px-4 py-3"
+            className="rounded-2xl border border-sand bg-cream px-4 py-3 outline-none focus:border-sage"
           >
             {CATEGORIES.filter((c) => c !== 'all').map((c) => (
               <option key={c} value={c}>
-                {c}
+                Category: {c}
               </option>
             ))}
           </select>
           <select
             value={form.intensity}
             onChange={(e) => setForm({ ...form, intensity: e.target.value })}
-            className="rounded-2xl border border-sand bg-cream px-4 py-3"
+            className="rounded-2xl border border-sand bg-cream px-4 py-3 outline-none focus:border-sage"
           >
-            <option value="gentle">gentle</option>
-            <option value="moderate">moderate</option>
+            <option value="gentle">Intensity: gentle</option>
+            <option value="moderate">Intensity: moderate</option>
           </select>
           <input
             type="number"
@@ -115,25 +141,36 @@ export default function Activities() {
             max={180}
             value={form.durationMins}
             onChange={(e) => setForm({ ...form, durationMins: Number(e.target.value) })}
-            className="rounded-2xl border border-sand bg-cream px-4 py-3"
+            placeholder="Duration in mins"
+            className="rounded-2xl border border-sand bg-cream px-4 py-3 outline-none focus:border-sage"
           />
           <textarea
-            placeholder="Short description"
+            placeholder="Short description / intention"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="rounded-2xl border border-sand bg-cream px-4 py-3 md:col-span-2"
+            className="rounded-2xl border border-sand bg-cream px-4 py-3 outline-none focus:border-sage md:col-span-2"
           />
-          <label className="flex items-center gap-2 text-sm md:col-span-2">
+          <label className="flex items-center gap-2 text-sm md:col-span-2 cursor-pointer">
             <input
               type="checkbox"
               checked={form.isTemplate}
               onChange={(e) => setForm({ ...form, isTemplate: e.target.checked })}
+              className="accent-sage h-4 w-4 rounded"
             />
-            Save as a routine template
+            Save as a reusable routine template
           </label>
-          <button type="submit" className="rounded-2xl bg-ink px-4 py-3 text-paper md:col-span-2">
-            Save activity
-          </button>
+          <div className="flex gap-3 md:col-span-2">
+            <button type="submit" className="flex-1 rounded-2xl bg-sage py-3 text-sm font-semibold text-paper shadow-sm hover:bg-moss transition">
+              Save activity
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-2xl border border-sand bg-cream px-6 py-3 text-sm font-semibold text-ink/70 hover:bg-sand transition"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       ) : null}
 
@@ -141,8 +178,8 @@ export default function Activities() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search activities"
-          className="w-full rounded-2xl border border-sand bg-paper px-4 py-3 md:max-w-sm"
+          placeholder="Search activities by name..."
+          className="w-full rounded-2xl border border-sand bg-paper px-4 py-3 md:max-w-sm outline-none focus:border-sage shadow-xs"
         />
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (
@@ -150,8 +187,8 @@ export default function Activities() {
               key={c}
               type="button"
               onClick={() => setCategory(c)}
-              className={`rounded-full px-3 py-1.5 text-sm capitalize ${
-                category === c ? 'bg-sage text-paper' : 'bg-paper text-ink/70'
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${
+                category === c ? 'bg-sage text-paper shadow-xs' : 'bg-paper text-ink/70 border border-sand hover:border-sage'
               }`}
             >
               {c}
@@ -166,9 +203,9 @@ export default function Activities() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((item) => (
               <article key={item._id} className="rounded-3xl border border-sage/20 bg-moss/15 p-4">
-                <p className="text-xs uppercase tracking-wide text-sage">{item.category}</p>
-                <p className="mt-1 font-medium">{item.name}</p>
-                <p className="text-sm text-ink/55">{item.durationMins} min · {item.intensity}</p>
+                <p className="text-xs uppercase tracking-wide text-sage font-semibold">{item.category}</p>
+                <p className="mt-1 font-semibold text-ink">{item.name}</p>
+                <p className="text-sm text-ink/55 mt-0.5">{item.durationMins} min · {item.intensity}</p>
               </article>
             ))}
           </div>
@@ -176,33 +213,52 @@ export default function Activities() {
       ) : null}
 
       {items.length === 0 ? (
-        <EmptyState title="No activities yet" body="Add walking, yoga, or another gentle activity to start your library." />
+        <EmptyState title="No activities found" body="Try adjusting your category filter or search query, or add your own custom activity." />
       ) : (
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
-            <article key={item._id} className="flex flex-col rounded-3xl bg-paper p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-clay">{item.category}</p>
-                  <h3 className="font-display mt-1 text-2xl">{item.name}</h3>
+            <article key={item._id} className="flex flex-col justify-between rounded-3xl border border-sand bg-paper p-5 shadow-sm transition hover:shadow-md">
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="text-xs uppercase tracking-wider font-semibold text-clay bg-clay/10 px-2 py-0.5 rounded-md">
+                      {item.category}
+                    </span>
+                    <h3 className="font-display mt-2 text-2xl text-ink font-medium">{item.name}</h3>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {item.createdBy && (
+                      <button
+                        type="button"
+                        onClick={() => deleteActivity(item._id, item.name)}
+                        className="text-ink/35 hover:text-clay transition p-1"
+                        title="Delete custom activity"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                    <button type="button" onClick={() => toggleFav(item._id)} className="text-clay p-1 transition hover:scale-110">
+                      <Heart size={20} fill={item.isFavorite ? 'currentColor' : 'none'} />
+                    </button>
+                  </div>
                 </div>
-                <button type="button" onClick={() => toggleFav(item._id)} className="text-clay">
-                  <Heart size={20} fill={item.isFavorite ? 'currentColor' : 'none'} />
+                <p className="mt-2 text-sm text-ink/65 leading-relaxed">{item.description}</p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-sand/60">
+                <p className="text-xs text-ink/50 font-medium">
+                  ⏱ {item.durationMins} min · {item.intensity}
+                  {item.isTemplate ? ' · 📋 template' : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => logSession(item)}
+                  className="mt-3 w-full rounded-2xl bg-cream py-2.5 text-sm font-semibold text-ink transition hover:bg-sand flex items-center justify-center gap-2 border border-sand"
+                >
+                  <CheckCircle2 size={15} className="text-sage" />
+                  Log as today's session
                 </button>
               </div>
-              <p className="mt-2 flex-1 text-sm text-ink/65">{item.description}</p>
-              <p className="mt-3 text-sm text-ink/50">
-                {item.durationMins} min · {item.intensity}
-                {item.isTemplate ? ' · template' : ''}
-                {item.isFavorite ? ' · favorite' : ''}
-              </p>
-              <button
-                type="button"
-                onClick={() => logSession(item)}
-                className="mt-4 rounded-2xl bg-cream py-2 text-sm hover:bg-sand"
-              >
-                Log as today's session
-              </button>
             </article>
           ))}
         </section>

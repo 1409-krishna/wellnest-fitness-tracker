@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { Activity, Brain, Home, Target, CalendarCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import AICoachModal from './AICoachModal'
 
 const links = [
   { to: '/', label: 'Dashboard', icon: Home },
@@ -78,6 +79,9 @@ export default function Layout() {
           </nav>
         </div>
       </div>
+
+      {/* Floating AI Wellness Coach Widget */}
+      <AICoachModal />
     </div>
   )
 }

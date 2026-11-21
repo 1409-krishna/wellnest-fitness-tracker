@@ -1,7 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { auth } = require('../middleware/auth');
-const { list, templates, create, toggleFavorite } = require('../controllers/activityController');
+const { list, templates, create, toggleFavorite, remove } = require('../controllers/activityController');
 const { CATEGORIES } = require('../utils/constants');
 
 const router = express.Router();
@@ -16,5 +16,6 @@ router.post(
   create
 );
 router.post('/:id/favorite', toggleFavorite);
+router.delete('/:id', remove);
 
 module.exports = router;

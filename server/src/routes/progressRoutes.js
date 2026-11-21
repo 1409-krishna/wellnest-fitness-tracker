@@ -5,8 +5,10 @@ const {
   weekly,
   listSessions,
   createSession,
+  deleteSession,
   listJournals,
   createJournal,
+  deleteJournal,
 } = require('../controllers/progressController');
 const { MOODS } = require('../utils/constants');
 
@@ -21,6 +23,8 @@ router.post(
   body('date').notEmpty().withMessage('Date is required'),
   createSession
 );
+router.delete('/sessions/:id', deleteSession);
+
 router.get('/journals', listJournals);
 router.post(
   '/journals',
@@ -29,5 +33,6 @@ router.post(
   body('mood').optional().isIn(MOODS),
   createJournal
 );
+router.delete('/journals/:id', deleteJournal);
 
 module.exports = router;

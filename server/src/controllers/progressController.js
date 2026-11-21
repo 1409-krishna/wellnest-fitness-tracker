@@ -84,6 +84,16 @@ async function createSession(req, res, next) {
   }
 }
 
+async function deleteSession(req, res, next) {
+  try {
+    const { id } = req.params;
+    await Session.findOneAndDelete({ _id: id, userId: req.user._id });
+    res.json({ message: 'Session deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function listJournals(req, res, next) {
   try {
     const notes = await Journal.find({ userId: req.user._id }).sort({ date: -1 }).limit(30);
@@ -111,10 +121,22 @@ async function createJournal(req, res, next) {
   }
 }
 
+async function deleteJournal(req, res, next) {
+  try {
+    const { id } = req.params;
+    await Journal.findOneAndDelete({ _id: id, userId: req.user._id });
+    res.json({ message: 'Journal reflection deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   weekly,
   listSessions,
   createSession,
+  deleteSession,
   listJournals,
   createJournal,
+  deleteJournal,
 };
