@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Activity = require('../models/Activity');
 const Favorite = require('../models/Favorite');
+const HabitLog = require('../models/HabitLog');
 
 async function list(req, res, next) {
   try {
@@ -11,8 +12,9 @@ async function list(req, res, next) {
     if (category && category !== 'all') {
       filter.category = category;
     }
-    if (search) {
-      filter.name = { $regex: search, $options: 'i' };
+    if (search && search.trim()) {
+      const sanitized = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.name = { $regex: sanitized, $options: 'i' };
     }
     const activities = await Activity.find(filter).sort({ isTemplate: -1, name: 1 });
     const favs = await Favorite.find({ userId: req.user._id }).select('activityId');
@@ -85,6 +87,7 @@ async function remove(req, res, next) {
     }
     await activity.deleteOne();
     await Favorite.deleteMany({ activityId: id });
+    await HabitLog.updateMany({ activityId: id }, { $set: { activityId: null } });
     res.json({ message: 'Activity deleted successfully' });
   } catch (err) {
     next(err);

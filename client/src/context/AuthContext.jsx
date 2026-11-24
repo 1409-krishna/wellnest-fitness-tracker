@@ -8,12 +8,11 @@ export function AuthProvider({ children }) {
     const raw = localStorage.getItem('wellnest_user')
     return raw ? JSON.parse(raw) : null
   })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('wellnest_token')))
 
   useEffect(() => {
     const token = localStorage.getItem('wellnest_token')
     if (!token) {
-      setLoading(false)
       return
     }
     api
@@ -24,6 +23,8 @@ export function AuthProvider({ children }) {
       })
       .catch(() => {
         setUser(null)
+        localStorage.removeItem('wellnest_token')
+        localStorage.removeItem('wellnest_user')
       })
       .finally(() => setLoading(false))
   }, [])

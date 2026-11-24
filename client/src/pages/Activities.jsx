@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Heart, Plus, Trash2, CheckCircle2, Sparkles } from 'lucide-react'
 import api from '../api/client'
 import EmptyState from '../components/EmptyState'
@@ -23,14 +23,18 @@ export default function Activities() {
   const [notice, setNotice] = useState('')
   const [open, setOpen] = useState(false)
 
-  const load = async () => {
-    const { data } = await api.get('/activities', { params: { category, search } })
-    setItems(data)
-  }
+  const load = useCallback(async () => {
+    try {
+      const { data } = await api.get('/activities', { params: { category, search } })
+      setItems(data)
+    } catch {
+      // Handled silently
+    }
+  }, [category, search])
 
   useEffect(() => {
-    load().catch(() => {})
-  }, [category, search])
+    load()
+  }, [load])
 
   const templates = useMemo(() => items.filter((a) => a.isTemplate), [items])
 

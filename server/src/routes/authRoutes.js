@@ -1,7 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
-const { register, login, googleLogin, me } = require('../controllers/authController');
+const { register, login, googleLogin, me, updateMe } = require('../controllers/authController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -37,5 +37,6 @@ router.post(
 );
 
 router.get('/me', auth, me);
+router.put('/me', auth, updateMe);
 
 module.exports = router;

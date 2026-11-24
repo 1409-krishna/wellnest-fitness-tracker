@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles, X, Send, Bot, User, CheckCircle2, ChevronDown } from 'lucide-react'
+import { Sparkles, X, Send, Bot, User, CheckCircle2 } from 'lucide-react'
 import api from '../api/client'
 import { toDateKey } from '../utils/dates'
 import { triggerConfetti } from '../utils/confetti'
@@ -52,6 +52,7 @@ export default function AICoachModal() {
         },
       ])
     } catch (err) {
+      console.error('Coach query error:', err)
       setMessages([
         ...newMessages,
         {
@@ -84,8 +85,9 @@ export default function AICoachModal() {
       triggerConfetti()
       setLoggedNotice(`✓ Logged ${activity?.name || pillar} for today!`)
       setTimeout(() => setLoggedNotice(''), 4000)
-    } catch {
-      setLoggedNotice('Logged to your daily schedule!')
+    } catch (err) {
+      setLoggedNotice(err.response?.data?.message || 'Could not log activity.')
+      setTimeout(() => setLoggedNotice(''), 4000)
     }
   }
 

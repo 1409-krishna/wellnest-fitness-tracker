@@ -1,10 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function GoogleAuthButton({ onSuccess, onError, text = 'Continue with Google', disabled = false }) {
+export default function GoogleAuthButton({
+  onSuccess,
+  onError,
+  text = 'Continue with Google',
+  disabled = false,
+}) {
   const containerRef = useRef(null)
   const [rendered, setRendered] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+  const successRef = useRef(onSuccess)
+  const errorRef = useRef(onError)
+
+  useEffect(() => {
+    successRef.current = onSuccess
+    errorRef.current = onError
+  })
 
   useEffect(() => {
     let timer = null
@@ -24,14 +37,15 @@ export default function GoogleAuthButton({ onSuccess, onError, text = 'Continue 
             client_id: clientId,
             callback: (response) => {
               if (response.credential) {
-                onSuccess(response.credential)
+                successRef.current?.(response.credential)
               } else {
-                onError?.('No credential returned from Google')
+                errorRef.current?.('No credential returned from Google')
               }
             },
           })
 
           containerRef.current.innerHTML = ''
+          const btnWidth = Math.min(350, Math.max(260, window.innerWidth - 64))
           window.google.accounts.id.renderButton(containerRef.current, {
             type: 'standard',
             theme: 'outline',
@@ -39,7 +53,7 @@ export default function GoogleAuthButton({ onSuccess, onError, text = 'Continue 
             text: 'continue_with',
             shape: 'rectangular',
             logo_alignment: 'left',
-            width: 350,
+            width: btnWidth,
           })
 
           setRendered(true)
@@ -52,7 +66,6 @@ export default function GoogleAuthButton({ onSuccess, onError, text = 'Continue 
       }
 
       if (attempts > 30) {
-        // Stop polling after 15 seconds
         setErrorMsg('Google Sign-In script took too long to load. Please check your internet connection.')
         return true
       }
@@ -75,7 +88,7 @@ export default function GoogleAuthButton({ onSuccess, onError, text = 'Continue 
   }, [clientId])
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className={`w-full flex flex-col items-center ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
       {/* Google Identity Services renders official button directly here */}
       <div
         ref={containerRef}
@@ -86,7 +99,7 @@ export default function GoogleAuthButton({ onSuccess, onError, text = 'Continue 
       {!rendered && !errorMsg && (
         <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-sand bg-cream py-3 text-sm text-ink/60">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-sage/40 border-t-sage" />
-          <span>Loading Google Sign-In...</span>
+          <span>{text}...</span>
         </div>
       )}
 

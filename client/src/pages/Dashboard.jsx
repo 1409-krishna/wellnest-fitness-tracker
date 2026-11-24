@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Droplets, Moon, Sparkles, Wind, CheckCircle2 } from 'lucide-react'
 import api from '../api/client'
@@ -19,21 +19,25 @@ export default function Dashboard() {
   const today = toDateKey()
   const weekStart = startOfWeek()
 
-  const load = async () => {
-    const from = addDays(today, -6)
-    const [h, p, g] = await Promise.all([
-      api.get('/habits', { params: { from, to: today } }),
-      api.get('/progress/weekly', { params: { weekStart } }),
-      api.get('/goals', { params: { weekStart } }),
-    ])
-    setHabits(h.data)
-    setProgress(p.data)
-    setGoals(g.data.filter((item) => item.active))
-  }
+  const load = useCallback(async () => {
+    try {
+      const from = addDays(today, -6)
+      const [h, p, g] = await Promise.all([
+        api.get('/habits', { params: { from, to: today } }),
+        api.get('/progress/weekly', { params: { weekStart } }),
+        api.get('/goals', { params: { weekStart } }),
+      ])
+      setHabits(h.data)
+      setProgress(p.data)
+      setGoals(g.data.filter((item) => item.active))
+    } catch {
+      // Handled silently or via interceptor
+    }
+  }, [today, weekStart])
 
   useEffect(() => {
-    load().catch(() => {})
-  }, [])
+    load()
+  }, [load])
 
   const todayLogs = habits.filter((h) => h.date === today && h.completed)
   const pending = PILLARS.filter((p) => !todayLogs.some((l) => l.pillar === p))

@@ -44,6 +44,13 @@ export function triggerConfetti() {
   }
 
   let animationFrame
+  const safetyTimeout = setTimeout(() => {
+    cancelAnimationFrame(animationFrame)
+    if (canvas.parentNode) {
+      canvas.parentNode.removeChild(canvas)
+    }
+  }, 4500)
+
   const render = () => {
     ctx.clearRect(0, 0, width, height)
     let active = false
@@ -70,6 +77,7 @@ export function triggerConfetti() {
     if (active) {
       animationFrame = requestAnimationFrame(render)
     } else {
+      clearTimeout(safetyTimeout)
       cancelAnimationFrame(animationFrame)
       if (canvas.parentNode) {
         canvas.parentNode.removeChild(canvas)

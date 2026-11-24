@@ -68,7 +68,9 @@ async function googleLogin(req, res, next) {
       return res.status(400).json({ message: 'Google credential token is required' });
     }
 
-    const clientId = process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null;
+    const clientId = process.env.GOOGLE_CLIENT_ID
+      ? process.env.GOOGLE_CLIENT_ID.trim().replace(/^["']|["']$/g, '')
+      : null;
     if (!clientId) {
       console.error('GOOGLE_CLIENT_ID is missing in server environment.');
       return res.status(500).json({
@@ -149,4 +151,31 @@ async function me(req, res) {
   res.json({ user: publicUser(req.user) });
 }
 
-module.exports = { register, login, googleLogin, me };
+async function updateMe(req, res, next) {
+  try {
+    const { name, reminderHour, preferredCategories } = req.body;
+    const updates = {};
+    if (name && typeof name === 'string' && name.trim()) {
+      updates.name = name.trim();
+    }
+    if (reminderHour !== undefined) {
+      const hour = Number(reminderHour);
+      if (hour >= 0 && hour <= 23) {
+        updates['preferences.reminderHour'] = hour;
+      }
+    }
+    if (Array.isArray(preferredCategories)) {
+      updates['preferences.preferredCategories'] = preferredCategories;
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+    res.json({ user: publicUser(user) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, googleLogin, me, updateMe };

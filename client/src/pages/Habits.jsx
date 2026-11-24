@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Sparkles, CheckCircle2 } from 'lucide-react'
 import api from '../api/client'
 import { addDays, formatNice, PILLAR_META, PILLARS, startOfWeek } from '../utils/dates'
@@ -55,18 +55,25 @@ export default function Habits() {
   const [weekStart, setWeekStart] = useState(startOfWeek())
   const [logs, setLogs] = useState([])
   const [celebration, setCelebration] = useState('')
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+  const days = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
+    [weekStart]
+  )
 
-  const load = async () => {
-    const { data } = await api.get('/habits', {
-      params: { from: days[0], to: days[6] },
-    })
-    setLogs(data)
-  }
+  const load = useCallback(async () => {
+    try {
+      const { data } = await api.get('/habits', {
+        params: { from: days[0], to: days[6] },
+      })
+      setLogs(data)
+    } catch {
+      // Handled silently
+    }
+  }, [days])
 
   useEffect(() => {
-    load().catch(() => {})
-  }, [weekStart])
+    load()
+  }, [load])
 
   const isDone = (date, pillar) =>
     logs.some((l) => l.date === date && l.pillar === pillar && l.completed)

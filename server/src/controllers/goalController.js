@@ -55,22 +55,24 @@ async function create(req, res, next) {
 
 async function update(req, res, next) {
   try {
-    if (req.body.title && isRestrictedGoal(req.body.title)) {
+    const { title, pillar, targetPerWeek, endDate, active } = req.body;
+    if (title && isRestrictedGoal(title)) {
       return res.status(400).json({
         message:
           'Goals stay flexible and wellness-focused. Avoid weight, calorie, or appearance targets.',
       });
     }
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (pillar !== undefined) updates.pillar = pillar;
+    if (targetPerWeek !== undefined) updates.targetPerWeek = targetPerWeek;
+    if (endDate !== undefined) updates.endDate = endDate;
+    if (active !== undefined) updates.active = Boolean(active);
+
     const goal = await Goal.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
-      {
-        title: req.body.title,
-        pillar: req.body.pillar,
-        targetPerWeek: req.body.targetPerWeek,
-        endDate: req.body.endDate,
-        active: req.body.active,
-      },
-      { new: true }
+      { $set: updates },
+      { new: true, runValidators: true }
     );
     if (!goal) return res.status(404).json({ message: 'Goal not found' });
     res.json(goal);

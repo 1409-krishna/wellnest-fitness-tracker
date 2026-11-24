@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Check, Sparkles, PlusCircle } from 'lucide-react'
+import { Sparkles, PlusCircle } from 'lucide-react'
 import api from '../api/client'
 import InsightCard from '../components/InsightCard'
 import { toDateKey } from '../utils/dates'

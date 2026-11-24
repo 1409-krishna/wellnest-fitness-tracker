@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -33,22 +33,26 @@ export default function Progress() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
-  const load = async () => {
-    const [p, g, j, s] = await Promise.all([
-      api.get('/progress/weekly', { params: { weekStart } }),
-      api.get('/goals', { params: { weekStart } }),
-      api.get('/progress/journals'),
-      api.get('/progress/sessions'),
-    ])
-    setProgress(p.data)
-    setGoals(g.data)
-    setJournals(j.data)
-    setSessions(s.data)
-  }
+  const load = useCallback(async () => {
+    try {
+      const [p, g, j, s] = await Promise.all([
+        api.get('/progress/weekly', { params: { weekStart } }),
+        api.get('/goals', { params: { weekStart } }),
+        api.get('/progress/journals'),
+        api.get('/progress/sessions'),
+      ])
+      setProgress(p.data)
+      setGoals(g.data)
+      setJournals(j.data)
+      setSessions(s.data)
+    } catch {
+      // Handled silently
+    }
+  }, [weekStart])
 
   useEffect(() => {
-    load().catch(() => {})
-  }, [])
+    load()
+  }, [load])
 
   const createGoal = async (e) => {
     e.preventDefault()
