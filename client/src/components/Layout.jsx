@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { Activity, Brain, Home, Target, CalendarCheck, Droplet } from 'lucide-react'
+import { Activity, Brain, Home, Target, CalendarCheck, Droplet, Sparkles } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import AICoachModal from './AICoachModal'
 
@@ -8,6 +8,7 @@ const links = [
   { to: '/activities', label: 'Activities', icon: Activity },
   { to: '/habits', label: 'Habits', icon: CalendarCheck },
   { to: '/hydration', label: 'Hydration', icon: Droplet },
+  { to: '/planner', label: 'AI Planner', icon: Sparkles },
   { to: '/progress', label: 'Progress', icon: Target },
   { to: '/insights', label: 'Insights', icon: Brain },
 ]
@@ -61,7 +62,7 @@ export default function Layout() {
           <main className="flex-1 px-4 py-6 pb-24 md:px-8 md:pb-8">
             <Outlet />
           </main>
-          <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-sand bg-paper md:hidden">
+          <nav className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-around overflow-x-auto border-t border-sand bg-paper px-1 md:hidden">
             {links.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}

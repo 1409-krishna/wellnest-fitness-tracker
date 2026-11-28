@@ -10,6 +10,7 @@ import Habits from './pages/Habits'
 import Progress from './pages/Progress'
 import Insights from './pages/Insights'
 import Hydration from './pages/Hydration'
+import AIPlanner from './pages/AIPlanner'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/habits" element={<Habits />} />
             <Route path="/hydration" element={<Hydration />} />
             <Route path="/progress" element={<Progress />} />
+            <Route path="/planner" element={<AIPlanner />} />
             <Route path="/insights" element={<Insights />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
