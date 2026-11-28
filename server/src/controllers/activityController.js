@@ -54,6 +54,8 @@ async function create(req, res, next) {
       intensity: req.body.intensity || 'gentle',
       durationMins: req.body.durationMins || 20,
       description: req.body.description || '',
+      image: req.body.image || '',
+      imagePublicId: req.body.imagePublicId || '',
       isTemplate: Boolean(req.body.isTemplate),
       createdBy: req.user._id,
     });

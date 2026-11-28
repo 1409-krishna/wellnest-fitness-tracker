@@ -1,7 +1,9 @@
+import { useState, useRef } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Activity, Brain, Home, Target, CalendarCheck, Droplet, Sparkles } from 'lucide-react'
+import { Activity, Brain, Home, Target, CalendarCheck, Droplet, Sparkles, Camera, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import AICoachModal from './AICoachModal'
+import api from '../api/client'
 
 const links = [
   { to: '/', label: 'Dashboard', icon: Home },
@@ -14,7 +16,31 @@ const links = [
 ]
 
 export default function Layout() {
-  const { user, logout } = useAuth()
+  const { user, logout, updateUser } = useAuth()
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('image', file)
+    setUploading(true)
+
+    try {
+      const res = await api.post('/upload/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      if (res.data.success && updateUser) {
+        updateUser({ ...user, avatar: res.data.avatar })
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not upload avatar image')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-cream text-ink">
@@ -40,21 +66,75 @@ export default function Layout() {
             ))}
           </nav>
           <div className="rounded-2xl bg-sand/70 p-4">
-            <p className="text-sm font-medium">{user?.name}</p>
-            <p className="truncate text-xs text-ink/50">{user?.email}</p>
-            <button
-              type="button"
-              onClick={logout}
-              className="mt-3 text-sm text-clay hover:underline"
-            >
-              Log out
-            </button>
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="h-10 w-10 rounded-full object-cover border border-sage/30"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sage text-paper font-bold text-sm">
+                    {user?.name?.[0]?.toUpperCase() || 'W'}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="absolute inset-0 flex items-center justify-center rounded-full bg-ink/60 text-paper opacity-0 transition group-hover:opacity-100 cursor-pointer"
+                  title="Upload profile picture"
+                >
+                  {uploading ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{user?.name}</p>
+                <p className="truncate text-xs text-ink/50">{user?.email}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between border-t border-sand/80 pt-2 text-xs">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="text-sage hover:underline cursor-pointer"
+              >
+                {uploading ? 'Uploading...' : 'Change photo'}
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="text-clay hover:underline cursor-pointer"
+              >
+                Log out
+              </button>
+            </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex items-center justify-between border-b border-sand bg-paper/80 px-4 py-4 backdrop-blur md:hidden">
-            <p className="font-display text-xl text-sage">Wellnest</p>
+            <div className="flex items-center gap-2">
+              {user?.avatar && (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="h-7 w-7 rounded-full object-cover border border-sage/30"
+                />
+              )}
+              <p className="font-display text-xl text-sage">Wellnest</p>
+            </div>
             <button type="button" onClick={logout} className="text-sm text-clay">
               Log out
             </button>

@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    avatarPublicId: {
+      type: String,
+      default: '',
+    },
     preferences: {
       preferredCategories: { type: [String], default: [] },
       reminderHour: { type: Number, default: 8, min: 0, max: 23 },

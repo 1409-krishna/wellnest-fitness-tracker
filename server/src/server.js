@@ -11,6 +11,7 @@ const progressRoutes = require('./routes/progressRoutes');
 const insightsRoutes = require('./routes/insightsRoutes');
 const hydrationRoutes = require('./routes/hydrationRoutes');
 const planRoutes = require('./routes/planRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const Activity = require('./models/Activity');
 const catalog = require('./seed/activities.json');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -59,6 +60,7 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/insights', insightsRoutes);
 app.use('/api/hydration', hydrationRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

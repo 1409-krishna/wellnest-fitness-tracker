@@ -59,8 +59,13 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser)
+    localStorage.setItem('wellnest_user', JSON.stringify(updatedUser))
+  }
+
   const value = useMemo(
-    () => ({ user, loading, login, register, loginWithGoogle, logout }),
+    () => ({ user, loading, login, register, loginWithGoogle, logout, updateUser }),
     [user, loading]
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Heart, Plus, Trash2, CheckCircle2, Sparkles } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import { Heart, Plus, Trash2, CheckCircle2, Sparkles, Image, Loader2, X } from 'lucide-react'
 import api from '../api/client'
 import EmptyState from '../components/EmptyState'
 import { CATEGORIES, toDateKey } from '../utils/dates'
@@ -12,6 +12,8 @@ const emptyForm = {
   durationMins: 20,
   description: '',
   isTemplate: false,
+  image: '',
+  imagePublicId: '',
 }
 
 export default function Activities() {
@@ -19,9 +21,11 @@ export default function Activities() {
   const [category, setCategory] = useState('all')
   const [search, setSearch] = useState('')
   const [form, setForm] = useState(emptyForm)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [open, setOpen] = useState(false)
+  const fileInputRef = useRef(null)
 
   const load = useCallback(async () => {
     try {
@@ -37,6 +41,40 @@ export default function Activities() {
   }, [load])
 
   const templates = useMemo(() => items.filter((a) => a.isTemplate), [items])
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('image', file)
+    setUploadingImage(true)
+    setError('')
+
+    try {
+      const res = await api.post('/upload/activity-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      if (res.data.success) {
+        setForm((prev) => ({
+          ...prev,
+          image: res.data.imageUrl,
+          imagePublicId: res.data.publicId,
+        }))
+        setNotice('Activity photo uploaded successfully!')
+        setTimeout(() => setNotice(''), 3000)
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not upload activity image')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const removeUploadedImage = () => {
+    setForm((prev) => ({ ...prev, image: '', imagePublicId: '' }))
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   const toggleFav = async (id) => {
     await api.post(`/activities/${id}/favorite`)
@@ -154,6 +192,53 @@ export default function Activities() {
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             className="rounded-2xl border border-sand bg-cream px-4 py-3 outline-none focus:border-sage md:col-span-2"
           />
+          <div className="md:col-span-2 rounded-2xl border border-dashed border-sand bg-cream/40 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink/60 mb-2">
+              Activity Photo (Optional)
+            </p>
+            {form.image ? (
+              <div className="relative inline-block">
+                <img
+                  src={form.image}
+                  alt="Activity preview"
+                  className="h-28 w-44 rounded-xl object-cover border border-sand shadow-xs"
+                />
+                <button
+                  type="button"
+                  onClick={removeUploadedImage}
+                  className="absolute -top-2 -right-2 rounded-full bg-clay p-1 text-paper shadow-md hover:bg-clay/90 cursor-pointer"
+                  title="Remove image"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label className="inline-flex items-center gap-2 rounded-xl border border-sand bg-paper px-4 py-2 text-xs font-semibold text-ink/80 hover:bg-sand cursor-pointer transition">
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-sage" />
+                      Uploading photo...
+                    </>
+                  ) : (
+                    <>
+                      <Image size={15} className="text-sage" />
+                      Upload photo
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                  />
+                </label>
+                <span className="ml-3 text-xs text-ink/45">PNG, JPG, or WEBP up to 5MB</span>
+              </div>
+            )}
+          </div>
           <label className="flex items-center gap-2 text-sm md:col-span-2 cursor-pointer">
             <input
               type="checkbox"
@@ -221,8 +306,17 @@ export default function Activities() {
       ) : (
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
-            <article key={item._id} className="flex flex-col justify-between rounded-3xl border border-sand bg-paper p-5 shadow-sm transition hover:shadow-md">
+            <article key={item._id} className="flex flex-col justify-between rounded-3xl border border-sand bg-paper p-5 shadow-sm transition hover:shadow-md overflow-hidden">
               <div>
+                {item.image && (
+                  <div className="-mx-5 -mt-5 mb-4 overflow-hidden h-40">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <span className="text-xs uppercase tracking-wider font-semibold text-clay bg-clay/10 px-2 py-0.5 rounded-md">

@@ -9,6 +9,8 @@ const activitySchema = new mongoose.Schema(
     durationMins: { type: Number, min: 5, max: 180, default: 20 },
     description: { type: String, trim: true, maxlength: 400, default: '' },
     isTemplate: { type: Boolean, default: false },
+    image: { type: String, default: '' },
+    imagePublicId: { type: String, default: '' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { timestamps: true }
