@@ -1,9 +1,6 @@
 # Wellnest — Fitness Activity & Wellness Habit Tracker
 
-**Project 41** · Assigned student: **Krishna Sharma**  
 Full-stack MERN app (MongoDB, Express, React, Node) with JWT auth and rule-based wellness insights.
-
-Original assignment was frontend-only. This repo implements that UX **and** a complete backend, database, and deployment-ready setup as required by the professor.
 
 ## What it does
 
