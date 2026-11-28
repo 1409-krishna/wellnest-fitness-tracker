@@ -9,6 +9,7 @@ const habitRoutes = require('./routes/habitRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const progressRoutes = require('./routes/progressRoutes');
 const insightsRoutes = require('./routes/insightsRoutes');
+const hydrationRoutes = require('./routes/hydrationRoutes');
 const Activity = require('./models/Activity');
 const catalog = require('./seed/activities.json');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -55,6 +56,7 @@ app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/insights', insightsRoutes);
+app.use('/api/hydration', hydrationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

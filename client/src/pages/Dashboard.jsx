@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Droplets, Moon, Sparkles, Wind, CheckCircle2 } from 'lucide-react'
+import { Droplets, Moon, Sparkles, Wind, CheckCircle2, Droplet, Plus } from 'lucide-react'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/StatCard'
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [habits, setHabits] = useState([])
   const [progress, setProgress] = useState(null)
   const [goals, setGoals] = useState([])
+  const [hydration, setHydration] = useState(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const today = toDateKey()
@@ -22,14 +23,18 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     try {
       const from = addDays(today, -6)
-      const [h, p, g] = await Promise.all([
+      const [h, p, g, hydro] = await Promise.all([
         api.get('/habits', { params: { from, to: today } }),
         api.get('/progress/weekly', { params: { weekStart } }),
         api.get('/goals', { params: { weekStart } }),
+        api.get('/hydration/today').catch(() => ({ data: null })),
       ])
       setHabits(h.data)
       setProgress(p.data)
       setGoals(g.data.filter((item) => item.active))
+      if (hydro?.data?.success) {
+        setHydration(hydro.data)
+      }
     } catch {
       // Handled silently or via interceptor
     }
@@ -38,6 +43,27 @@ export default function Dashboard() {
   useEffect(() => {
     load()
   }, [load])
+
+  const quickLogWater = async () => {
+    try {
+      const res = await api.post('/hydration/log', { amountMl: 250 })
+      if (res.data?.success) {
+        setHydration((prev) => ({
+          ...prev,
+          log: res.data.log,
+          summary: res.data.summary,
+        }))
+        if (res.data.summary.isTargetMet) {
+          triggerConfetti()
+        }
+        setMessage('+250 ml logged to your hydration tracker! 💧')
+        setTimeout(() => setMessage(''), 3000)
+        load()
+      }
+    } catch {
+      // Ignore
+    }
+  }
 
   const todayLogs = habits.filter((h) => h.date === today && h.completed)
   const pending = PILLARS.filter((p) => !todayLogs.some((l) => l.pillar === p))
@@ -118,6 +144,11 @@ export default function Dashboard() {
           hint="Four wellness pillars"
         />
         <StatCard
+          label="Water intake"
+          value={hydration?.summary ? `${hydration.summary.totalMl} ml` : '0 ml'}
+          hint={hydration?.summary ? `${hydration.summary.percentage}% of ${hydration.summary.targetMl} ml target` : 'Smart hydration'}
+        />
+        <StatCard
           label="This week's sessions"
           value={progress?.completedSessions ?? 0}
           hint="Logged activity sessions"
@@ -125,9 +156,8 @@ export default function Dashboard() {
         <StatCard
           label="Habit rate"
           value={`${progress?.habitRate ?? 0}%`}
-          hint="Completed cells this week"
+          hint={`${goals.length} active weekly targets`}
         />
-        <StatCard label="Active goals" value={goals.length} hint="Flexible weekly targets" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
@@ -177,7 +207,34 @@ export default function Dashboard() {
         </article>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col justify-between rounded-3xl border border-sand bg-paper p-5 transition hover:border-sage hover:shadow-sm">
+          <div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wider font-semibold text-sage">Hydration</p>
+              <Droplet size={16} className="text-sage" />
+            </div>
+            <p className="font-display mt-1 text-xl">Water tracker</p>
+            <p className="mt-2 text-sm text-ink/60">
+              {hydration?.summary
+                ? `${hydration.summary.totalMl} / ${hydration.summary.targetMl} ml (${hydration.summary.percentage}%)`
+                : 'Log and track fluid intake'}
+            </p>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={quickLogWater}
+              className="flex items-center gap-1 rounded-xl bg-sage/15 px-3 py-1.5 text-xs font-semibold text-sage hover:bg-sage hover:text-paper transition"
+            >
+              <Plus size={14} /> +250 ml
+            </button>
+            <Link to="/hydration" className="text-xs font-medium text-clay hover:underline">
+              View →
+            </Link>
+          </div>
+        </div>
+
         <Link to="/activities" className="rounded-3xl border border-sand bg-paper p-5 transition hover:border-sage hover:shadow-sm">
           <p className="text-xs uppercase tracking-wider font-semibold text-clay">Library</p>
           <p className="font-display mt-1 text-xl">Fitness activities</p>

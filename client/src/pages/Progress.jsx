@@ -8,8 +8,9 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ReferenceLine,
 } from 'recharts'
-import { Trash2, Sparkles, PlusCircle } from 'lucide-react'
+import { Trash2, Sparkles, PlusCircle, Droplet } from 'lucide-react'
 import api from '../api/client'
 import StatCard from '../components/StatCard'
 import { PILLARS, startOfWeek, toDateKey } from '../utils/dates'
@@ -28,6 +29,8 @@ export default function Progress() {
   const [goals, setGoals] = useState([])
   const [journals, setJournals] = useState([])
   const [sessions, setSessions] = useState([])
+  const [hydrationHistory, setHydrationHistory] = useState([])
+  const [hydrationAnalytics, setHydrationAnalytics] = useState(null)
   const [goalForm, setGoalForm] = useState(emptyGoal)
   const [note, setNote] = useState({ mood: 'steady', note: '' })
   const [error, setError] = useState('')
@@ -35,16 +38,21 @@ export default function Progress() {
 
   const load = useCallback(async () => {
     try {
-      const [p, g, j, s] = await Promise.all([
+      const [p, g, j, s, h] = await Promise.all([
         api.get('/progress/weekly', { params: { weekStart } }),
         api.get('/goals', { params: { weekStart } }),
         api.get('/progress/journals'),
         api.get('/progress/sessions'),
+        api.get('/hydration/history', { params: { days: 7 } }).catch(() => ({ data: null })),
       ])
       setProgress(p.data)
       setGoals(g.data)
       setJournals(j.data)
       setSessions(s.data)
+      if (h?.data?.success) {
+        setHydrationHistory(h.data.history)
+        setHydrationAnalytics(h.data.analytics)
+      }
     } catch {
       // Handled silently
     }
@@ -119,32 +127,66 @@ export default function Progress() {
         </div>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Sessions" value={progress?.completedSessions ?? 0} hint="This week" />
         <StatCard label="Habit completion" value={`${progress?.habitRate ?? 0}%`} hint="Four pillars × 7 days" />
         <StatCard label="Active goals" value={goals.filter((g) => g.active).length} />
+        <StatCard
+          label="Water daily avg"
+          value={hydrationAnalytics ? `${hydrationAnalytics.averageDailyMl} ml` : '0 ml'}
+          hint={hydrationAnalytics ? `${hydrationAnalytics.targetMetDays}/7 days on target` : 'Past 7 days'}
+        />
       </section>
 
-      <article className="rounded-3xl border border-sand bg-paper p-6 shadow-sm">
-        <h2 className="font-display text-2xl">Consistency chart</h2>
-        <div className="mt-4 h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={progress?.series || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e7ddcc" />
-              <XAxis dataKey="label" stroke="#8b9e95" />
-              <YAxis allowDecimals={false} stroke="#8b9e95" />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#fbf8f1', borderRadius: '12px', border: '1px solid #e7ddcc' }}
-              />
-              <Legend />
-              <Bar dataKey="movement" stackId="h" fill="#3c6b58" name="Movement" />
-              <Bar dataKey="rest" stackId="h" fill="#8fbc9a" name="Rest" />
-              <Bar dataKey="hydration" stackId="h" fill="#5b8f74" name="Hydration" />
-              <Bar dataKey="sleep" stackId="h" fill="#c45c26" name="Sleep" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </article>
+      <section className="grid gap-6 lg:grid-cols-2">
+        <article className="rounded-3xl border border-sand bg-paper p-6 shadow-sm">
+          <h2 className="font-display text-2xl">Consistency chart</h2>
+          <p className="text-xs text-ink/60 mt-0.5">Four pillars completion breakdown this week.</p>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={progress?.series || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7ddcc" />
+                <XAxis dataKey="label" stroke="#8b9e95" />
+                <YAxis allowDecimals={false} stroke="#8b9e95" />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#fbf8f1', borderRadius: '12px', border: '1px solid #e7ddcc' }}
+                />
+                <Legend />
+                <Bar dataKey="movement" stackId="h" fill="#3c6b58" name="Movement" />
+                <Bar dataKey="rest" stackId="h" fill="#8fbc9a" name="Rest" />
+                <Bar dataKey="hydration" stackId="h" fill="#5b8f74" name="Hydration" />
+                <Bar dataKey="sleep" stackId="h" fill="#c45c26" name="Sleep" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+
+        <article className="rounded-3xl border border-sand bg-paper p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-2xl">Hydration vs target</h2>
+              <p className="text-xs text-ink/60 mt-0.5">Daily volume logged against your recommended target.</p>
+            </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sage/15 text-sage">
+              <Droplet size={18} />
+            </span>
+          </div>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={hydrationHistory || []} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7ddcc" vertical={false} />
+                <XAxis dataKey="shortDate" stroke="#8b9e95" tick={{ fontSize: 11 }} />
+                <YAxis stroke="#8b9e95" unit="ml" tick={{ fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#fbf8f1', borderRadius: '12px', border: '1px solid #e7ddcc' }}
+                />
+                <ReferenceLine y={2500} stroke="#c45c26" strokeDasharray="4 4" label={{ value: 'Target', position: 'top', fill: '#c45c26', fontSize: 10 }} />
+                <Bar dataKey="totalMl" fill="#3c6b58" name="Intake (ml)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+      </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
         <article className="rounded-3xl border border-sand bg-paper p-6 shadow-sm">

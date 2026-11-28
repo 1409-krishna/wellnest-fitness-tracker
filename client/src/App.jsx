@@ -9,6 +9,7 @@ import Activities from './pages/Activities'
 import Habits from './pages/Habits'
 import Progress from './pages/Progress'
 import Insights from './pages/Insights'
+import Hydration from './pages/Hydration'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/activities" element={<Activities />} />
             <Route path="/habits" element={<Habits />} />
+            <Route path="/hydration" element={<Hydration />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/insights" element={<Insights />} />
           </Route>
