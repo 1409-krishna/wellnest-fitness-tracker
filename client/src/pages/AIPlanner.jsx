@@ -17,6 +17,7 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import api from '../api/client'
+import ScheduleModal from '../components/ScheduleModal'
 import { triggerConfetti } from '../utils/confetti'
 
 const pillarIcons = {
@@ -42,6 +43,7 @@ export default function AIPlanner() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [generationStep, setGenerationStep] = useState(0)
+  const [schedulingItem, setSchedulingItem] = useState(null)
   const [message, setMessage] = useState('')
 
   // Generator options
@@ -432,25 +434,36 @@ export default function AIPlanner() {
                       )}
                     </div>
 
-                    {/* Bottom Duration & One-Click Apply */}
+                    {/* Bottom Duration & One-Click Apply / Schedule */}
                     <div className="mt-4 flex items-center justify-between border-t border-sand/50 pt-3 text-xs">
                       <span className="text-ink/50 font-medium">
                         ⏱ {item.durationMins} minutes · {item.intensity}
                       </span>
 
-                      {item.applied ? (
-                        <span className="flex items-center gap-1 font-semibold text-sage">
-                          <Check size={14} /> Logged
-                        </span>
-                      ) : (
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => handleApplyItem(activePlan._id, item._id)}
-                          className="flex items-center gap-1 rounded-xl bg-sage/15 px-3 py-1.5 text-xs font-semibold text-sage transition hover:bg-sage hover:text-paper"
+                          onClick={() => setSchedulingItem(item)}
+                          className="rounded-xl border border-sand bg-paper p-1.5 text-xs text-ink/70 hover:bg-sand transition cursor-pointer"
+                          title="Schedule on Google Calendar"
                         >
-                          Log to Routine <ArrowRight size={13} />
+                          <Calendar size={13} className="text-sage" />
                         </button>
-                      )}
+
+                        {item.applied ? (
+                          <span className="flex items-center gap-1 font-semibold text-sage">
+                            <Check size={14} /> Logged
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleApplyItem(activePlan._id, item._id)}
+                            className="flex items-center gap-1 rounded-xl bg-sage/15 px-3 py-1.5 text-xs font-semibold text-sage transition hover:bg-sage hover:text-paper cursor-pointer"
+                          >
+                            Log to Routine <ArrowRight size={13} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )
@@ -641,6 +654,16 @@ export default function AIPlanner() {
           </div>
         </div>
       )}
+
+      {/* Google Calendar Schedule Modal */}
+      <ScheduleModal
+        isOpen={Boolean(schedulingItem)}
+        onClose={() => setSchedulingItem(null)}
+        activity={schedulingItem}
+        onScheduled={(event) => {
+          showNotification(`📅 "${event.title}" scheduled to calendar!`)
+        }}
+      />
     </div>
   )
 }

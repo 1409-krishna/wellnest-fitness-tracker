@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Activity, Brain, Home, Target, CalendarCheck, Droplet, Sparkles, Camera, Loader2 } from 'lucide-react'
+import { Activity, Brain, Home, Target, CalendarCheck, Droplet, Sparkles, Camera, Loader2, Users } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import AICoachModal from './AICoachModal'
 import api from '../api/client'
@@ -13,6 +13,7 @@ const links = [
   { to: '/planner', label: 'AI Planner', icon: Sparkles },
   { to: '/progress', label: 'Progress', icon: Target },
   { to: '/insights', label: 'Insights', icon: Brain },
+  { to: '/community', label: 'Community', icon: Users },
 ]
 
 export default function Layout() {

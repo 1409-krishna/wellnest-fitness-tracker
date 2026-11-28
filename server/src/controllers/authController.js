@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const { signToken, publicUser } = require('../utils/token');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 async function register(req, res, next) {
   try {
@@ -23,6 +24,8 @@ async function register(req, res, next) {
       authProvider: 'local',
     });
     const token = signToken(user._id);
+    // Fire-and-forget welcome email — never block response
+    sendWelcomeEmail(user).catch((e) => console.error('[Auth] Welcome email error:', e.message));
     res.status(201).json({ token, user: publicUser(user) });
   } catch (err) {
     next(err);

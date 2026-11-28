@@ -1,7 +1,9 @@
 const { validationResult } = require('express-validator');
 const Goal = require('../models/Goal');
 const HabitLog = require('../models/HabitLog');
+const User = require('../models/User');
 const { isRestrictedGoal, addDays } = require('../utils/constants');
+const { sendGoalAchievedEmail } = require('../services/emailService');
 
 async function list(req, res, next) {
   try {
@@ -75,6 +77,16 @@ async function update(req, res, next) {
       { new: true, runValidators: true }
     );
     if (!goal) return res.status(404).json({ message: 'Goal not found' });
+
+    // Fire goal-achieved email if newly completed
+    if (updates.active === false || (goal.actualThisWeek !== undefined && goal.actualThisWeek >= goal.targetPerWeek)) {
+      const user = await User.findById(req.user._id).select('name email');
+      if (user) {
+        sendGoalAchievedEmail(user, goal).catch((e) =>
+          console.error('[Goal] Achievement email error:', e.message)
+        );
+      }
+    }
     res.json(goal);
   } catch (err) {
     next(err);

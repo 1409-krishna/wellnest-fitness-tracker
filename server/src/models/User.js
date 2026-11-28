@@ -38,6 +38,12 @@ const userSchema = new mongoose.Schema(
       preferredCategories: { type: [String], default: [] },
       reminderHour: { type: Number, default: 8, min: 0, max: 23 },
     },
+    googleCalendarTokens: {
+      accessToken: { type: String, default: '' },
+      refreshToken: { type: String, default: '' },
+      expiryDate: { type: Number, default: 0 },
+      isConnected: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );

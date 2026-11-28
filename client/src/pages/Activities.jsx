@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import { Heart, Plus, Trash2, CheckCircle2, Sparkles, Image, Loader2, X } from 'lucide-react'
+import { Heart, Plus, Trash2, CheckCircle2, Sparkles, Image, Loader2, X, Calendar } from 'lucide-react'
 import api from '../api/client'
 import EmptyState from '../components/EmptyState'
+import ScheduleModal from '../components/ScheduleModal'
 import { CATEGORIES, toDateKey } from '../utils/dates'
 import { triggerConfetti } from '../utils/confetti'
 
@@ -25,6 +26,7 @@ export default function Activities() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [open, setOpen] = useState(false)
+  const [schedulingActivity, setSchedulingActivity] = useState(null)
   const fileInputRef = useRef(null)
 
   const load = useCallback(async () => {
@@ -348,19 +350,40 @@ export default function Activities() {
                   ⏱ {item.durationMins} min · {item.intensity}
                   {item.isTemplate ? ' · 📋 template' : ''}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => logSession(item)}
-                  className="mt-3 w-full rounded-2xl bg-cream py-2.5 text-sm font-semibold text-ink transition hover:bg-sand flex items-center justify-center gap-2 border border-sand"
-                >
-                  <CheckCircle2 size={15} className="text-sage" />
-                  Log as today's session
-                </button>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => logSession(item)}
+                    className="rounded-2xl bg-cream py-2.5 text-xs font-semibold text-ink transition hover:bg-sand flex items-center justify-center gap-1.5 border border-sand cursor-pointer"
+                  >
+                    <CheckCircle2 size={14} className="text-sage" />
+                    Log today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSchedulingActivity(item)}
+                    className="rounded-2xl border border-sand bg-paper py-2.5 text-xs font-semibold text-ink/80 transition hover:bg-sand flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Calendar size={14} className="text-sage" />
+                    Schedule
+                  </button>
+                </div>
               </div>
             </article>
           ))}
         </section>
       )}
+
+      {/* Google Calendar Schedule Modal */}
+      <ScheduleModal
+        isOpen={Boolean(schedulingActivity)}
+        onClose={() => setSchedulingActivity(null)}
+        activity={schedulingActivity}
+        onScheduled={(event) => {
+          setNotice(`📅 "${event.title}" scheduled successfully!`)
+          setTimeout(() => setNotice(''), 4000)
+        }}
+      />
     </div>
   )
 }

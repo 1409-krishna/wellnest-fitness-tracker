@@ -11,6 +11,7 @@ import Progress from './pages/Progress'
 import Insights from './pages/Insights'
 import Hydration from './pages/Hydration'
 import AIPlanner from './pages/AIPlanner'
+import Community from './pages/Community'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/planner" element={<AIPlanner />} />
             <Route path="/insights" element={<Insights />} />
+            <Route path="/community" element={<Community />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
