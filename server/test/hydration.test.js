@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ path: './.env' });
-const { connectDb } = require('./src/config/db');
-const User = require('./src/models/User');
-const HydrationLog = require('./src/models/HydrationLog');
-const HabitLog = require('./src/models/HabitLog');
-const { signToken } = require('./src/utils/token');
-const hydrationController = require('./src/controllers/hydrationController');
+const { connectDb } = require('../src/config/db');
+const User = require('../src/models/User');
+const HydrationLog = require('../src/models/HydrationLog');
+const HabitLog = require('../src/models/HabitLog');
+const { signToken } = require('../src/utils/token');
+const hydrationController = require('../src/controllers/hydrationController');
 
 async function runTests() {
   console.log('--- STARTING PHASE 2 HYDRATION INTEGRATION TESTS ---');

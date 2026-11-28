@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ path: './.env' });
 const { connectDb } = require('../src/config/db');
+require('../src/models/Activity');
 const User = require('../src/models/User');
 const ScheduledEvent = require('../src/models/ScheduledEvent');
 const calendarController = require('../src/controllers/calendarController');
